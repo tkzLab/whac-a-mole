@@ -5,8 +5,10 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh; /* 高さを固定せず、最小の高さを指定 */
     margin: 0;
+    padding: 20px 0; /* 上下に余白を追加 */
+    box-sizing: border-box; /* paddingを高さに含める */
     color: #5C4033;
     text-align: center;
 }
