@@ -8,6 +8,20 @@ const difficultyButtons = document.querySelectorAll('.difficulty-btn');
 const moleUpload = document.getElementById('mole-upload');
 const fileNameDisplay = document.getElementById('file-name');
 
+// 結果表示モーダル関連の要素
+const resultModal = document.getElementById('result-modal');
+const resultStars = document.getElementById('result-stars');
+const resultCount = document.getElementById('result-count');
+const resultMessage = document.getElementById('result-message');
+const playAgainButton = document.getElementById('play-again-button');
+const homeButton = document.getElementById('home-button');
+
+// きゅうけい（ポーズ）関連の要素
+const pauseButton = document.getElementById('pause-button');
+const pauseModal = document.getElementById('pause-modal');
+const resumeButton = document.getElementById('resume-button');
+const quitButton = document.getElementById('quit-button');
+
 // モーダル関連の要素
 const cropModal = document.getElementById('crop-modal');
 const imageToCrop = document.getElementById('image-to-crop');
@@ -22,9 +36,22 @@ let moleSpeed = 2600;
 let hitPosition;
 let timerId = null;
 let moleTimerId = null;
+let moleAppearances = 0; // 出現数（星の数の計算に使う）
 
-// --mole-image変数をgridではなく、:root（ドキュメント全体）に設定
-document.documentElement.style.setProperty('--mole-image', "url('mole.svg')");
+// もぐらの表情画像（出現時にランダムで切り替え、叩かれたら目回し顔）
+const moleExpressions = [
+    'images/mole-normal.png',
+    'images/mole-happy.png',
+    'images/mole-angry.png',
+    'images/mole-smile.png',
+    'images/mole-surprised.png',
+];
+const moleDizzyImage = 'images/mole-dizzy.png';
+let customMoleImage = null; // アップロード画像があれば表情切替せずこちらを使う
+
+// ちらつき防止のため全表情を先読み
+[...moleExpressions, moleDizzyImage].forEach(src => { new Image().src = src; });
+
 document.documentElement.style.setProperty('--mole-rise-time', '1.2s');
 timeLeftDisplay.textContent = timeLeft;
 
@@ -63,9 +90,8 @@ cropButton.addEventListener('click', () => {
         height: 200,
         imageSmoothingQuality: 'high',
     });
-    const croppedImageDataUrl = canvas.toDataURL('image/png');
-    document.documentElement.style.setProperty('--mole-image', `url(${croppedImageDataUrl})`);
-    
+    customMoleImage = canvas.toDataURL('image/png');
+
     cropModal.style.display = 'none';
     cropper.destroy();
 });
@@ -104,20 +130,38 @@ difficultyButtons.forEach(button => {
 
 function randomSquare() {
     squares.forEach(square => {
-        square.querySelector('.mole').classList.remove('up');
+        square.querySelector('.mole').classList.remove('up', 'hit');
     });
 
     let randomSquare = squares[Math.floor(Math.random() * 9)];
-    randomSquare.querySelector('.mole').classList.add('up');
+    const mole = randomSquare.querySelector('.mole');
+    const image = customMoleImage
+        || moleExpressions[Math.floor(Math.random() * moleExpressions.length)];
+    mole.style.backgroundImage = `url("${image}")`;
+    mole.classList.add('up');
     hitPosition = randomSquare.id;
+    moleAppearances++;
 }
 
 function hitMole(square) {
     if (timerId && square.id == hitPosition) {
         score++;
         scoreDisplay.textContent = score;
-        square.querySelector('.mole').classList.remove('up');
         hitPosition = null;
+
+        const mole = square.querySelector('.mole');
+        if (!customMoleImage) {
+            // 目回し顔を一瞬見せてから引っ込める
+            mole.style.backgroundImage = `url("${moleDizzyImage}")`;
+            mole.classList.add('hit');
+            setTimeout(() => {
+                if (mole.classList.contains('hit')) {
+                    mole.classList.remove('up', 'hit');
+                }
+            }, 350);
+        } else {
+            mole.classList.remove('up');
+        }
     }
 }
 
@@ -142,30 +186,114 @@ function countDown() {
         clearInterval(moleTimerId);
         timerId = null;
         
+        pauseButton.style.display = 'none';
+
         setTimeout(() => {
-            alert('ゲームオーバー! あなたのスコアは ' + score + ' です。');
+            showResult();
             startButton.disabled = false;
-            startButton.textContent = 'もう一度プレイ';
+            startButton.textContent = 'もういちど あそぶ';
             timeButtons.forEach(btn => btn.disabled = false);
             difficultyButtons.forEach(btn => btn.disabled = false);
             moleUpload.disabled = false;
         }, 100);
 
         squares.forEach(square => {
-            square.querySelector('.mole').classList.remove('up');
+            square.querySelector('.mole').classList.remove('up', 'hit');
         });
     }
 }
 
+// 結果表示：たたけた割合で星とほめことばを決める（時間・難易度が違っても公平）
+function showResult() {
+    const ratio = moleAppearances > 0 ? score / moleAppearances : 0;
+    let stars, message;
+    if (score === 0) {
+        stars = 0;
+        message = 'つぎは きっと たたけるよ！';
+    } else if (ratio >= 0.7) {
+        stars = 3;
+        message = 'もぐらたたき めいじん！';
+    } else if (ratio >= 0.4) {
+        stars = 2;
+        message = 'すごい！ そのちょうし！';
+    } else {
+        stars = 1;
+        message = 'よく がんばったね！';
+    }
+
+    resultStars.innerHTML =
+        '<span class="star">⭐</span>'.repeat(stars)
+        + '<span class="star">☆</span>'.repeat(3 - stars);
+    resultCount.textContent = score;
+    resultMessage.textContent = message;
+    resultModal.style.display = 'flex';
+}
+
+playAgainButton.addEventListener('click', () => {
+    resultModal.style.display = 'none';
+    startGame();
+});
+
+// ほーむ（最初の画面）に戻す
+function goHome() {
+    clearInterval(timerId);
+    clearInterval(moleTimerId);
+    timerId = null;
+
+    resultModal.style.display = 'none';
+    pauseModal.style.display = 'none';
+    pauseButton.style.display = 'none';
+
+    score = 0;
+    timeLeft = gameTime;
+    scoreDisplay.textContent = score;
+    timeLeftDisplay.textContent = timeLeft;
+    hitPosition = null;
+
+    startButton.disabled = false;
+    startButton.textContent = 'スタート';
+    timeButtons.forEach(btn => btn.disabled = false);
+    difficultyButtons.forEach(btn => btn.disabled = false);
+    moleUpload.disabled = false;
+
+    squares.forEach(square => {
+        square.querySelector('.mole').classList.remove('up', 'hit');
+    });
+}
+
+homeButton.addEventListener('click', goHome);
+quitButton.addEventListener('click', goHome);
+
+// きゅうけい（ポーズ）
+pauseButton.addEventListener('click', () => {
+    if (!timerId) return;
+    clearInterval(timerId);
+    clearInterval(moleTimerId);
+    timerId = null; // プレイ中判定をオフにして、きゅうけい中は叩けなくする
+    hitPosition = null;
+    squares.forEach(square => {
+        square.querySelector('.mole').classList.remove('up', 'hit');
+    });
+    pauseModal.style.display = 'flex';
+});
+
+resumeButton.addEventListener('click', () => {
+    pauseModal.style.display = 'none';
+    moveMole();
+    timerId = setInterval(countDown, 1000);
+});
+
 function startGame() {
     score = 0;
     timeLeft = gameTime;
+    moleAppearances = 0;
     scoreDisplay.textContent = score;
     timeLeftDisplay.textContent = timeLeft;
     hitPosition = null;
     
     startButton.disabled = true;
     startButton.textContent = 'プレイ中';
+    pauseButton.style.display = 'inline-block';
     timeButtons.forEach(btn => btn.disabled = true);
     difficultyButtons.forEach(btn => btn.disabled = true);
     moleUpload.disabled = true;

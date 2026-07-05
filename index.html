@@ -30,6 +30,7 @@
             </div>
         </div>
         <button id="start-button">スタート</button>
+        <button id="pause-button">きゅうけい</button>
     </div>
     <div class="upload-section">
         <label class="upload-label">
@@ -48,6 +49,29 @@
         <div class="square" id="7"><div class="mole"></div></div>
         <div class="square" id="8"><div class="mole"></div></div>
         <div class="square" id="9"><div class="mole"></div></div>
+    </div>
+
+    <!-- 結果表示モーダル -->
+    <div id="result-modal">
+        <div class="result-content">
+            <h2 id="result-title">おしまい！</h2>
+            <div id="result-stars"></div>
+            <img id="result-mole" src="images/mole-happy.png" alt="もぐら">
+            <p id="result-score"><span id="result-count">0</span><span class="result-unit">ひき たたけたよ！</span></p>
+            <p id="result-message"></p>
+            <button id="play-again-button">もういちど あそぶ</button>
+            <button id="home-button" class="secondary-button">おわる</button>
+        </div>
+    </div>
+
+    <!-- きゅうけい（ポーズ）モーダル -->
+    <div id="pause-modal">
+        <div class="result-content">
+            <h2 id="pause-title">きゅうけいちゅう</h2>
+            <img id="pause-mole" src="images/mole-smile.png" alt="もぐら">
+            <button id="resume-button">つづける</button>
+            <button id="quit-button" class="secondary-button">おわる</button>
+        </div>
     </div>
 
     <!-- トリミング用モーダル -->

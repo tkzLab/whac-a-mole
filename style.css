@@ -163,7 +163,7 @@ h1 {
     /* もぐら自身を円形にする */
     border-radius: 50%; 
     
-    background-image: var(--mole-image, url('mole.svg'));
+    background-image: url('images/mole-normal.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -180,6 +180,200 @@ h1 {
     transform: translateY(0); /* .upクラスで上に表示 */
 }
 
+
+/* きゅうけい（ポーズ）ボタン：プレイ中だけ表示 */
+#pause-button {
+    display: none;
+    padding: 15px 30px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    background: linear-gradient(to bottom, #64B5F6, #1E88E5);
+    color: white;
+    border-radius: 15px;
+    box-shadow: 0 5px #1565C0;
+    text-shadow: 1px 1px 2px #00000080;
+    transition: all 0.2s;
+}
+
+#pause-button:active {
+    transform: translateY(2px);
+    box-shadow: 0 3px #1565C0;
+}
+
+/* 結果表示・きゅうけいモーダル */
+#pause-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+#pause-title {
+    color: #1E88E5;
+    font-size: 2.2rem;
+    margin: 0 0 10px;
+    text-shadow: 1px 1px 2px #00000022;
+}
+
+#pause-mole {
+    display: block;
+    width: 110px;
+    height: 110px;
+    margin: 0 auto 20px;
+}
+
+#resume-button {
+    padding: 12px 30px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    background: linear-gradient(to bottom, #FFD700, #FFA500);
+    color: white;
+    border-radius: 15px;
+    box-shadow: 0 5px #B8860B;
+    text-shadow: 1px 1px 2px #00000080;
+    transition: all 0.2s;
+}
+
+#resume-button:active {
+    transform: translateY(2px);
+    box-shadow: 0 3px #B8860B;
+}
+
+/* 「おわる」ボタン：控えめな色で押し間違いを防ぐ */
+.secondary-button {
+    padding: 12px 25px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    background: linear-gradient(to bottom, #BCAAA4, #8D6E63);
+    color: white;
+    border-radius: 15px;
+    box-shadow: 0 5px #5D4037;
+    text-shadow: 1px 1px 2px #00000080;
+    transition: all 0.2s;
+    margin-left: 10px;
+}
+
+.secondary-button:active {
+    transform: translateY(2px);
+    box-shadow: 0 3px #5D4037;
+}
+
+#result-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.result-content {
+    background: linear-gradient(to bottom, #FFFBEB, #FFF3C4);
+    padding: 30px 50px;
+    border-radius: 25px;
+    border: 6px solid #FFD700;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: pop-in 0.4s ease-out;
+}
+
+@keyframes pop-in {
+    0% { transform: scale(0.5); opacity: 0; }
+    70% { transform: scale(1.08); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+#result-title {
+    color: #FF8C00;
+    font-size: 2.2rem;
+    margin: 0 0 10px;
+    text-shadow: 1px 1px 2px #00000022;
+}
+
+#result-stars {
+    font-size: 2.5rem;
+    min-height: 3rem;
+    letter-spacing: 5px;
+}
+
+#result-stars .star {
+    display: inline-block;
+    animation: star-bounce 0.5s ease-out backwards;
+}
+
+#result-stars .star:nth-child(2) { animation-delay: 0.2s; }
+#result-stars .star:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes star-bounce {
+    0% { transform: scale(0) rotate(-30deg); }
+    60% { transform: scale(1.4) rotate(10deg); }
+    100% { transform: scale(1) rotate(0); }
+}
+
+#result-mole {
+    width: 110px;
+    height: 110px;
+}
+
+#result-score {
+    font-size: 1.3rem;
+    margin: 5px 0;
+    color: #5C4033;
+}
+
+#result-count {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #FF8C00;
+    margin-right: 5px;
+}
+
+#result-message {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #5C4033;
+    margin: 5px 0 20px;
+}
+
+#play-again-button {
+    padding: 12px 30px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    background: linear-gradient(to bottom, #FFD700, #FFA500);
+    color: white;
+    border-radius: 15px;
+    box-shadow: 0 5px #B8860B;
+    text-shadow: 1px 1px 2px #00000080;
+    transition: all 0.2s;
+}
+
+#play-again-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px #B8860B;
+}
+
+#play-again-button:active {
+    transform: translateY(2px);
+    box-shadow: 0 3px #B8860B;
+}
 
 /* モーダル用のスタイル */
 #crop-modal {
