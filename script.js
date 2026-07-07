@@ -185,8 +185,8 @@ function countDown() {
         clearInterval(timerId);
         clearInterval(moleTimerId);
         timerId = null;
-        
-        pauseButton.style.display = 'none';
+
+        document.body.classList.remove('playing');
 
         setTimeout(() => {
             showResult();
@@ -242,7 +242,7 @@ function goHome() {
 
     resultModal.style.display = 'none';
     pauseModal.style.display = 'none';
-    pauseButton.style.display = 'none';
+    document.body.classList.remove('playing');
 
     score = 0;
     timeLeft = gameTime;
@@ -293,7 +293,7 @@ function startGame() {
     
     startButton.disabled = true;
     startButton.textContent = 'プレイ中';
-    pauseButton.style.display = 'inline-block';
+    document.body.classList.add('playing');
     timeButtons.forEach(btn => btn.disabled = true);
     difficultyButtons.forEach(btn => btn.disabled = true);
     moleUpload.disabled = true;

@@ -5,93 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>もぐらたたき</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Cropper.jsのCSSを読み込み -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
 </head>
 <body>
-    <a id="portal-link" href="https://tkzlab.github.io/game-portal/">🏠 ぽーたるへ</a>
-    <style>
-    #portal-link{position:fixed;top:10px;left:10px;z-index:9999;padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.92);color:#555;font-size:14px;font-weight:700;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.18);}
-    #portal-link:hover{background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.28);}
-    </style>
-    <h1>もぐらたたき</h1>
-    <div class="game-info">
-        <h2>スコア: <span id="score">0</span></h2>
-        <h2>残り時間: <span id="time-left">30</span></h2>
-    </div>
-    <div class="game-controls">
-        <div class="options-group">
-            <span class="options-label">時間:</span>
-            <div class="time-options">
-                <button class="time-btn active" data-time="15">15秒</button>
-                <button class="time-btn" data-time="30">30秒</button>
-            </div>
+    <a class="icon-btn home" href="https://tkzlab.github.io/game-portal/"><span class="ico">🏠</span>ぽーたる</a>
+
+    <img class="logo" src="images/logo.png" alt="もぐらたたき">
+
+    <div class="stats">
+        <div class="stat score">
+            <span class="badge">⭐</span>
+            <span class="col"><span class="label">スコア</span><span class="num" id="score">0</span></span>
         </div>
-        <div class="options-group">
-            <span class="options-label">モード:</span>
-            <div class="difficulty-options">
-                <button class="difficulty-btn active" data-speed="2600">かんたん</button>
-                <button class="difficulty-btn" data-speed="650">通常</button>
-            </div>
+        <div class="stat time">
+            <span class="badge">🕐</span>
+            <span class="col"><span class="label">のこりじかん</span><span class="num" id="time-left">15</span></span>
         </div>
-        <button id="start-button">スタート</button>
-        <button id="pause-button">きゅうけい</button>
     </div>
-    <div class="upload-section">
-        <label class="upload-label">
-            もぐらの画像を変更
-            <input type="file" id="mole-upload" accept="image/*" style="display: none;">
-        </label>
-        <span id="file-name">未選択</span>
-    </div>
+
     <div class="grid">
-        <div class="square" id="1"><div class="mole"></div></div>
-        <div class="square" id="2"><div class="mole"></div></div>
-        <div class="square" id="3"><div class="mole"></div></div>
-        <div class="square" id="4"><div class="mole"></div></div>
-        <div class="square" id="5"><div class="mole"></div></div>
-        <div class="square" id="6"><div class="mole"></div></div>
-        <div class="square" id="7"><div class="mole"></div></div>
-        <div class="square" id="8"><div class="mole"></div></div>
-        <div class="square" id="9"><div class="mole"></div></div>
+        <div class="square" id="1"><div class="hole-back"></div><div class="mole-mask"><div class="mole"></div></div><div class="hole-front"></div></div>
+        <div class="square" id="2"><div class="hole-back"></div><div class="mole-mask"><div class="mole"></div></div><div class="hole-front"></div></div>
+        <div class="square" id="3"><div class="hole-back"></div><div class="mole-mask"><div class="mole"></div></div><div class="hole-front"></div></div>
+        <div class="square" id="4"><div class="hole-back"></div><div class="mole-mask"><div class="mole"></div></div><div class="hole-front"></div></div>
+        <div class="square" id="5"><div class="hole-back"></div><div class="mole-mask"><div class="mole"></div></div><div class="hole-front"></div></div>
+        <div class="square" id="6"><div class="hole-back"></div><div class="mole-mask"><div class="mole"></div></div><div class="hole-front"></div></div>
+        <div class="square" id="7"><div class="hole-back"></div><div class="mole-mask"><div class="mole"></div></div><div class="hole-front"></div></div>
+        <div class="square" id="8"><div class="hole-back"></div><div class="mole-mask"><div class="mole"></div></div><div class="hole-front"></div></div>
+        <div class="square" id="9"><div class="hole-back"></div><div class="mole-mask"><div class="mole"></div></div><div class="hole-front"></div></div>
+        <img class="hammer" src="images/hammer.png" alt="">
+    </div>
+
+    <div class="controls">
+        <label class="icon-btn upload-btn btn" style="color:#fff">
+            <span class="ico">🖼️</span>もぐら
+            <input type="file" id="mole-upload" accept="image/*" style="display:none">
+        </label>
+        <button id="start-button" class="btn btn-gold">▶ スタート</button>
+        <button id="pause-button" class="btn btn-blue"><span class="ico">⏸</span>きゅうけい</button>
+    </div>
+    <span id="file-name">未選択</span>
+
+    <div class="bottombar">
+        <span class="opt-label">じかん</span>
+        <div class="seg time-options">
+            <button class="time-btn active" data-time="15">15びょう</button>
+            <button class="time-btn" data-time="30">30びょう</button>
+        </div>
+        <span class="sep"></span>
+        <span class="opt-label">むずかしさ</span>
+        <div class="seg difficulty-options">
+            <button class="difficulty-btn active" data-speed="2600">かんたん</button>
+            <button class="difficulty-btn" data-speed="650">ふつう</button>
+        </div>
     </div>
 
     <!-- 結果表示モーダル -->
-    <div id="result-modal">
-        <div class="result-content">
-            <h2 id="result-title">おしまい！</h2>
+    <div class="modal" id="result-modal">
+        <div class="panel">
+            <div class="ribbon" id="result-title">おしまい！</div>
             <div id="result-stars"></div>
-            <img id="result-mole" src="images/mole-happy.png" alt="もぐら">
             <p id="result-score"><span id="result-count">0</span><span class="result-unit">ひき たたけたよ！</span></p>
-            <p id="result-message"></p>
-            <button id="play-again-button">もういちど あそぶ</button>
-            <button id="home-button" class="secondary-button">おわる</button>
+            <div class="result-row">
+                <div class="bubble" id="result-message"></div>
+                <img id="result-mole" src="images/mole-happy.png" alt="もぐら">
+            </div>
+            <div class="modal-actions">
+                <button id="play-again-button" class="btn btn-gold">↻ もういちど あそぶ</button>
+                <button id="home-button" class="btn btn-soft">🏠 おわる</button>
+            </div>
         </div>
     </div>
 
     <!-- きゅうけい（ポーズ）モーダル -->
-    <div id="pause-modal">
-        <div class="result-content">
-            <h2 id="pause-title">きゅうけいちゅう</h2>
+    <div class="modal" id="pause-modal">
+        <div class="panel">
+            <div class="ribbon pause-ribbon" id="pause-title">きゅうけいちゅう</div>
             <img id="pause-mole" src="images/mole-smile.png" alt="もぐら">
-            <button id="resume-button">つづける</button>
-            <button id="quit-button" class="secondary-button">おわる</button>
+            <div class="modal-actions">
+                <button id="resume-button" class="btn btn-green">▶ つづける</button>
+                <button id="quit-button" class="btn btn-soft">🏠 おわる</button>
+            </div>
         </div>
     </div>
 
     <!-- トリミング用モーダル -->
-    <div id="crop-modal">
-        <div class="modal-content">
-            <h2>画像をトリミング</h2>
-            <div class="crop-container">
-                <img id="image-to-crop">
+    <div class="modal" id="crop-modal">
+        <div class="panel">
+            <h2>もぐらのえを えらぶ</h2>
+            <div class="crop-container"><img id="image-to-crop"></div>
+            <div class="modal-actions">
+                <button id="crop-button" class="btn btn-green">けってい</button>
+                <button id="cancel-crop-button" class="btn btn-soft">やめる</button>
             </div>
-            <button id="crop-button">決定</button>
-            <button id="cancel-crop-button">キャンセル</button>
         </div>
     </div>
 
-    <!-- Cropper.jsのJSを読み込み -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script src="script.js"></script>
 </body>

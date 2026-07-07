@@ -1,426 +1,207 @@
-body {
-    font-family: 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif;
-    background: linear-gradient(to bottom, #87CEEB, #f0f8ff);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh; /* 高さを固定せず、最小の高さを指定 */
-    margin: 0;
-    padding: 20px 0; /* 上下に余白を追加 */
-    box-sizing: border-box; /* paddingを高さに含める */
-    color: #5C4033;
-    text-align: center;
+:root{
+  /* パレット（1か所で管理） */
+  --cream:#FBEFD0; --cream-2:#FFF7E0; --cream-line:#E9CF97;
+  --ink:#6B4A2B; --ink-soft:#9c7b4f;
+  --gold:#FFD34E; --gold-dark:#F5A623; --gold-shadow:#C9791A;
+  --green:#8DC63F; --green-dark:#5FA027; --green-shadow:#3E7A1B;
+  --blue:#5BB8E6; --blue-dark:#2E90C6; --blue-shadow:#1E6E9C;
+  --radius:16px;
+
+  /* 盤面（1マスとフチの寸法） */
+  --cell:min(150px, 25vw);
+  --gap:min(20px, 3vw);
+
+  font-family:'Arial Rounded MT Bold','Hiragino Maru Gothic ProN','Rounded Mplus 1c',Arial,sans-serif;
+}
+*{box-sizing:border-box}
+
+body{
+  margin:0;min-height:100vh;padding:16px 12px 24px;color:var(--ink);text-align:center;
+  background:url('images/bg.jpg') center/cover fixed no-repeat, #a8e0f0;
+  display:flex;flex-direction:column;align-items:center;
+  overflow-x:hidden; /* 装飾ハンマー等の右あふれで横スクロールさせない */
+  -webkit-user-select:none;user-select:none;
 }
 
-h1 {
-    font-size: 3rem;
-    color: white;
-    text-shadow: 2px 2px 4px #00000080;
-    margin-bottom: 10px;
+/* ===== ヘッダー ===== */
+.logo{width:min(440px,84vw);height:auto;filter:drop-shadow(0 4px 6px #0004);margin:4px 0 14px}
+
+/* 角の丸アイコンボタン */
+.icon-btn{
+  display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  border:none;cursor:pointer;text-decoration:none;color:var(--ink);
+  background:linear-gradient(to bottom,#fff,var(--cream));
+  border:3px solid #fff;border-radius:50%;width:60px;height:60px;
+  box-shadow:0 4px 0 #0002, 0 5px 10px #0003;font-weight:800;font-size:11px;line-height:1;
+}
+.icon-btn .ico{font-size:22px}
+.icon-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #0002}
+.home{position:fixed;top:12px;left:12px;z-index:50}
+
+/* ===== スコア/のこりじかん カード ===== */
+.stats{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap;justify-content:center}
+.stat{
+  display:flex;align-items:center;gap:12px;background:var(--cream-2);
+  border:3px solid var(--cream-line);border-radius:var(--radius);
+  padding:8px 22px 8px 12px;box-shadow:0 4px 0 #b98c4e55, 0 6px 12px #0003;
+}
+.stat .badge{
+  width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:26px;
+  background:#fff;box-shadow:inset 0 -3px 4px #0001, 0 2px 4px #0002;
+}
+.stat .col{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05}
+.stat .label{font-size:.85rem;font-weight:800;color:var(--ink-soft)}
+.stat .num{font-size:2.2rem;font-weight:900}
+.stat.score .num{color:var(--gold-dark)}
+.stat.time  .num{color:var(--green-dark)}
+
+/* ===== 盤面（穴グリッド） ===== */
+.grid{
+  display:grid;grid-template-columns:repeat(3,var(--cell));
+  gap:var(--gap) calc(var(--gap) * 1.4);justify-content:center;
+  margin:6px 0 14px;position:relative;
+}
+.square{
+  position:relative;width:var(--cell);height:calc(var(--cell) * 1.02);
+  cursor:pointer;
+}
+/* 穴：奥（フチ全体＋暗い内側） */
+.hole-back,.hole-front{
+  position:absolute;left:0;right:0;bottom:0;
+  height:calc(var(--cell) * 0.52);
+  background:url('images/hole.png') center bottom/100% 100% no-repeat;
+  pointer-events:none;
+}
+.hole-back{z-index:1}
+/* 穴：手前フチ（画像の下半分だけを重ねてもぐらの足元を隠す） */
+.hole-front{z-index:3;clip-path:inset(46% 0 0 0)}
+
+/* もぐらが上下する窓（この中でクリップ） */
+.mole-mask{
+  position:absolute;left:9%;right:9%;top:0;bottom:calc(var(--cell) * 0.14);
+  overflow:hidden;z-index:2;pointer-events:none;
+}
+.mole{
+  position:absolute;left:0;right:0;bottom:0;height:118%;
+  background-image:url('images/mole-normal.png');
+  background-size:contain;background-position:center bottom;background-repeat:no-repeat;
+  transform:translateY(105%);
+  transition:transform var(--mole-rise-time,0.3s) ease-out;
+}
+.mole.up{transform:translateY(0)}
+
+/* 装飾ハンマー（盤面の右下） */
+.hammer{
+  position:absolute;right:calc(var(--cell) * -0.35);bottom:calc(var(--cell) * 0.1);
+  width:calc(var(--cell) * 0.95);height:auto;z-index:4;pointer-events:none;
+  filter:drop-shadow(0 5px 5px #0004);transform:rotate(6deg);
 }
 
-.game-info {
-    display: flex;
-    justify-content: space-around;
-    width: 350px;
-    background-color: #FFFFFF80;
-    padding: 10px;
-    border-radius: 15px;
-    box-shadow: 0 4px 6px #0000001A;
-    margin-bottom: 20px;
-    font-size: 1.5rem;
+/* ===== ボタン共通 ===== */
+.btn{
+  border:none;cursor:pointer;color:#fff;font-weight:900;border-radius:var(--radius);
+  text-shadow:0 2px 2px #0004;transition:transform .08s, box-shadow .08s;
 }
+.btn:active{transform:translateY(3px)}
+.btn-gold {background:linear-gradient(to bottom,var(--gold),var(--gold-dark));box-shadow:0 5px 0 var(--gold-shadow),0 7px 10px #0003}
+.btn-gold:active {box-shadow:0 2px 0 var(--gold-shadow)}
+.btn-green{background:linear-gradient(to bottom,var(--green),var(--green-dark));box-shadow:0 5px 0 var(--green-shadow),0 7px 10px #0003}
+.btn-green:active{box-shadow:0 2px 0 var(--green-shadow)}
+.btn-blue {background:linear-gradient(to bottom,var(--blue),var(--blue-dark));box-shadow:0 5px 0 var(--blue-shadow),0 7px 10px #0003}
+.btn-blue:active {box-shadow:0 2px 0 var(--blue-shadow)}
+.btn-soft {background:linear-gradient(to bottom,#CDB79A,#9C7B4F);box-shadow:0 5px 0 #6B4A2B,0 7px 10px #0003}
+.btn-soft:active {box-shadow:0 2px 0 #6B4A2B}
 
-.game-controls {
-    display: flex;
-    align-items: flex-end;
-    gap: 20px;
-    margin-bottom: 20px;
+/* プレイ操作クラスター（もぐら変更・スタート・きゅうけい） */
+.controls{display:flex;align-items:center;gap:18px;margin-bottom:14px}
+#start-button{padding:15px 42px;font-size:1.6rem;letter-spacing:2px}
+#start-button:disabled{filter:grayscale(.5) brightness(.9);cursor:default}
+#pause-button{display:none;width:64px;height:64px;border-radius:50%;font-size:11px;flex-direction:column;gap:0;padding:0}
+#pause-button .ico{font-size:20px}
+.upload-btn{width:64px;height:64px;border-radius:50%;font-size:10px;line-height:1.1;padding:6px}
+.upload-btn .ico{font-size:20px;display:block}
+#file-name{display:none}
+
+/* ===== 下部バー（時間・モード） ===== */
+.bottombar{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;
+  background:var(--cream-2);border:3px solid var(--cream-line);border-radius:999px;
+  padding:8px 18px;box-shadow:0 4px 0 #b98c4e55,0 6px 12px #0003;max-width:96vw;
 }
-
-.options-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
+.bottombar .sep{width:2px;height:26px;background:var(--cream-line)}
+.opt-label{font-weight:800;color:var(--ink-soft);font-size:.9rem}
+.seg{display:inline-flex;background:#eadcbe;border-radius:999px;padding:4px;gap:2px}
+.seg button{
+  border:none;background:none;padding:8px 16px;border-radius:999px;cursor:pointer;
+  font-weight:800;font-size:.95rem;color:var(--ink-soft);transition:all .15s;
 }
+.time-btn.active{background:linear-gradient(to bottom,var(--green),var(--green-dark));color:#fff;box-shadow:0 2px 4px #3e7a1b66}
+.difficulty-btn.active{background:linear-gradient(to bottom,var(--gold),var(--gold-dark));color:#fff;box-shadow:0 2px 4px #c9791a66}
+.seg button:disabled{cursor:default;opacity:.9}
 
-.options-label {
-    font-weight: bold;
-    font-size: 0.9rem;
+/* ===== モーダル共通（羊皮紙風） ===== */
+.modal{
+  display:none;position:fixed;inset:0;background:#0007;z-index:100;
+  justify-content:center;align-items:center;padding:16px;
 }
-
-.time-options, .difficulty-options {
-    display: flex;
-    gap: 10px;
+.panel{
+  background:linear-gradient(to bottom,var(--cream-2),var(--cream));
+  border:6px solid var(--cream-line);border-radius:26px;
+  padding:26px 40px;text-align:center;max-width:92vw;
+  box-shadow:0 12px 30px #0006, inset 0 0 0 3px #fff8;
+  animation:pop-in .4s ease-out;
 }
+@keyframes pop-in{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.panel h2{margin:0 0 12px}
+.modal-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.modal-actions .btn{padding:12px 26px;font-size:1.15rem}
 
-.time-btn, .difficulty-btn {
-    padding: 10px 15px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    border: 2px solid #FFD700;
-    background-color: white;
-    color: #FFD700;
-    border-radius: 10px;
-    transition: all 0.2s;
+/* リボン見出し */
+.ribbon{
+  display:inline-block;background:linear-gradient(to bottom,#FF7A5C,#E8483F);color:#fff;
+  padding:8px 34px;border-radius:12px;font-size:1.8rem;font-weight:900;
+  box-shadow:0 4px 0 #b32e28,0 6px 10px #0004;text-shadow:0 2px 2px #0004;margin-bottom:6px;
 }
+.pause-ribbon{background:linear-gradient(to bottom,#5BB8E6,#2E90C6);box-shadow:0 4px 0 #1e6e9c,0 6px 10px #0004}
 
-.time-btn.active, .difficulty-btn.active {
-    background-color: #FFD700;
-    color: white;
+/* 結果 */
+#result-stars{font-size:2.6rem;min-height:3rem;letter-spacing:6px;margin:6px 0}
+#result-stars .star{display:inline-block;animation:star-bounce .5s ease-out backwards}
+#result-stars .star:nth-child(2){animation-delay:.2s}
+#result-stars .star:nth-child(3){animation-delay:.4s}
+@keyframes star-bounce{0%{transform:scale(0) rotate(-30deg)}60%{transform:scale(1.4) rotate(10deg)}100%{transform:scale(1) rotate(0)}}
+#result-mole,#pause-mole{width:104px;height:104px;object-fit:contain}
+.result-row{display:flex;align-items:center;gap:16px;justify-content:center;margin:6px 0 4px}
+.bubble{
+  position:relative;background:#fff;border:3px solid var(--cream-line);border-radius:16px;
+  padding:12px 16px;font-weight:800;color:var(--ink);max-width:210px;font-size:1.05rem;
 }
+.bubble::after{content:"";position:absolute;right:-14px;top:50%;margin-top:-8px;
+  border:8px solid transparent;border-left-color:#fff}
+#result-score{font-size:1.2rem;margin:2px 0 6px;color:var(--ink)}
+#result-count{font-size:2.8rem;font-weight:900;color:var(--gold-dark);margin-right:4px}
+#result-message{font-weight:800;font-size:1.1rem;margin:0}
 
+/* ===== トリミングモーダル ===== */
+#crop-modal{background:#000b}
+.crop-container{width:min(400px,80vw);height:min(400px,80vw);margin:12px auto}
+.cropper-view-box{border-radius:50%;box-shadow:0 0 0 9999px #0008}
 
-#start-button {
-    padding: 15px 30px;
-    font-size: 1.5rem;
-    font-weight: bold;
-    cursor: pointer;
-    border: none;
-    background: linear-gradient(to bottom, #FFD700, #FFA500);
-    color: white;
-    border-radius: 15px;
-    transition: all 0.2s;
-    box-shadow: 0 5px #B8860B;
-    text-shadow: 1px 1px 2px #00000080;
-}
+/* ===== プレイ中はセットアップを隠して盤面にフォーカス（B） ===== */
+body.playing .bottombar,body.playing .upload-btn,body.playing #start-button{display:none}
+body.playing #pause-button{display:inline-flex}
 
-#start-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 7px #B8860B;
-}
-
-#start-button:active {
-    transform: translateY(2px);
-    box-shadow: 0 3px #B8860B;
-}
-
-#start-button:disabled {
-    background: #a9a9a9;
-    cursor: not-allowed;
-    box-shadow: 0 5px #696969;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: repeat(3, 100px);
-    gap: 20px;
-    justify-content: center;
-    background: #228B22;
-    border: 10px solid #8B4513;
-    border-radius: 50% / 80px;
-    padding: 40px;
-    box-shadow: 0 10px 20px #00000033;
-}
-
-.upload-section {
-    margin-bottom: 20px;
-    background-color: #FFFFFF80;
-    padding: 10px 20px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.upload-label {
-    background-color: #007bff;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.upload-label:hover {
-    background-color: #0056b3;
-}
-
-#file-name {
-    font-style: italic;
-    color: #555;
-}
-
-.square {
-    width: 100px;
-    height: 100px;
-    background-color: #6B4226;
-    border-radius: 50%;
-    position: relative;
-    overflow: hidden;
-    border: 5px solid #00000033;
-    box-shadow: inset 0 5px 10px #0000004D;
-    z-index: 2; /* 穴が手前 */
-}
-
-.mole {
-    width: 100%;
-    height: 115%; /* 少し高くして上の余白をなくす */
-    
-    /* もぐら自身を円形にする */
-    border-radius: 50%; 
-    
-    background-image: url('images/mole-normal.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    
-    /* アニメーション */
-    transition: transform var(--mole-rise-time, 0.3s) ease-out;
-    transform: translateY(100%); /* 初期状態では下に隠す */
-    
-    position: relative;
-    z-index: 1; /* もぐらは後ろ */
-}
-
-.mole.up {
-    transform: translateY(0); /* .upクラスで上に表示 */
-}
-
-
-/* きゅうけい（ポーズ）ボタン：プレイ中だけ表示 */
-#pause-button {
-    display: none;
-    padding: 15px 30px;
-    font-size: 1.5rem;
-    font-weight: bold;
-    cursor: pointer;
-    border: none;
-    background: linear-gradient(to bottom, #64B5F6, #1E88E5);
-    color: white;
-    border-radius: 15px;
-    box-shadow: 0 5px #1565C0;
-    text-shadow: 1px 1px 2px #00000080;
-    transition: all 0.2s;
-}
-
-#pause-button:active {
-    transform: translateY(2px);
-    box-shadow: 0 3px #1565C0;
-}
-
-/* 結果表示・きゅうけいモーダル */
-#pause-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-}
-
-#pause-title {
-    color: #1E88E5;
-    font-size: 2.2rem;
-    margin: 0 0 10px;
-    text-shadow: 1px 1px 2px #00000022;
-}
-
-#pause-mole {
-    display: block;
-    width: 110px;
-    height: 110px;
-    margin: 0 auto 20px;
-}
-
-#resume-button {
-    padding: 12px 30px;
-    font-size: 1.3rem;
-    font-weight: bold;
-    cursor: pointer;
-    border: none;
-    background: linear-gradient(to bottom, #FFD700, #FFA500);
-    color: white;
-    border-radius: 15px;
-    box-shadow: 0 5px #B8860B;
-    text-shadow: 1px 1px 2px #00000080;
-    transition: all 0.2s;
-}
-
-#resume-button:active {
-    transform: translateY(2px);
-    box-shadow: 0 3px #B8860B;
-}
-
-/* 「おわる」ボタン：控えめな色で押し間違いを防ぐ */
-.secondary-button {
-    padding: 12px 25px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    border: none;
-    background: linear-gradient(to bottom, #BCAAA4, #8D6E63);
-    color: white;
-    border-radius: 15px;
-    box-shadow: 0 5px #5D4037;
-    text-shadow: 1px 1px 2px #00000080;
-    transition: all 0.2s;
-    margin-left: 10px;
-}
-
-.secondary-button:active {
-    transform: translateY(2px);
-    box-shadow: 0 3px #5D4037;
-}
-
-#result-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-}
-
-.result-content {
-    background: linear-gradient(to bottom, #FFFBEB, #FFF3C4);
-    padding: 30px 50px;
-    border-radius: 25px;
-    border: 6px solid #FFD700;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    animation: pop-in 0.4s ease-out;
-}
-
-@keyframes pop-in {
-    0% { transform: scale(0.5); opacity: 0; }
-    70% { transform: scale(1.08); }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-#result-title {
-    color: #FF8C00;
-    font-size: 2.2rem;
-    margin: 0 0 10px;
-    text-shadow: 1px 1px 2px #00000022;
-}
-
-#result-stars {
-    font-size: 2.5rem;
-    min-height: 3rem;
-    letter-spacing: 5px;
-}
-
-#result-stars .star {
-    display: inline-block;
-    animation: star-bounce 0.5s ease-out backwards;
-}
-
-#result-stars .star:nth-child(2) { animation-delay: 0.2s; }
-#result-stars .star:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes star-bounce {
-    0% { transform: scale(0) rotate(-30deg); }
-    60% { transform: scale(1.4) rotate(10deg); }
-    100% { transform: scale(1) rotate(0); }
-}
-
-#result-mole {
-    width: 110px;
-    height: 110px;
-}
-
-#result-score {
-    font-size: 1.3rem;
-    margin: 5px 0;
-    color: #5C4033;
-}
-
-#result-count {
-    font-size: 3rem;
-    font-weight: bold;
-    color: #FF8C00;
-    margin-right: 5px;
-}
-
-#result-message {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #5C4033;
-    margin: 5px 0 20px;
-}
-
-#play-again-button {
-    padding: 12px 30px;
-    font-size: 1.3rem;
-    font-weight: bold;
-    cursor: pointer;
-    border: none;
-    background: linear-gradient(to bottom, #FFD700, #FFA500);
-    color: white;
-    border-radius: 15px;
-    box-shadow: 0 5px #B8860B;
-    text-shadow: 1px 1px 2px #00000080;
-    transition: all 0.2s;
-}
-
-#play-again-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 7px #B8860B;
-}
-
-#play-again-button:active {
-    transform: translateY(2px);
-    box-shadow: 0 3px #B8860B;
-}
-
-/* モーダル用のスタイル */
-#crop-modal {
-    display: none; /* 初期状態を非表示にする */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    justify-content: center;
-    align-items: center;
-    z-index: 100;
-}
-
-.modal-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-}
-
-.crop-container {
-    width: 400px;
-    height: 400px;
-    margin-bottom: 15px;
-}
-
-#crop-button, #cancel-crop-button {
-    padding: 10px 20px;
-    font-size: 1rem;
-    cursor: pointer;
-    border-radius: 5px;
-    border: none;
-    color: white;
-}
-
-#crop-button {
-    background-color: #4CAF50;
-}
-
-#cancel-crop-button {
-    background-color: #f44336;
-}
-
-/* Cropper.jsのトリミングエリアを円形にする */
-.cropper-view-box {
-    border-radius: 50%;
-    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5); /* 周囲を暗くする */
+/* ===== 狭い画面（スマホ） ===== */
+@media (max-width:560px){
+  .logo{width:min(360px,80vw)}
+  .hammer{display:none}                 /* 装飾ハンマーは省略して盤面を優先 */
+  .grid{gap:var(--gap)}                  /* 列間を詰めて3列を確実に収める */
+  .stat{padding:6px 14px 6px 8px;gap:8px}
+  .stat .badge{width:38px;height:38px;font-size:20px}
+  .stat .num{font-size:1.8rem}
+  .controls{gap:12px}
+  #start-button{padding:13px 30px;font-size:1.35rem}
+  .bottombar{gap:8px 10px;padding:8px 12px}
+  .seg button{padding:7px 11px;font-size:.85rem}
+  .bottombar .sep{display:none}
 }
